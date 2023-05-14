@@ -37,6 +37,7 @@ def updatedata():
 root = tk.Tk()
 root.geometry("250x100")
 root.title("Auto Magnilearn")
+root.iconbitmap("icon.ico", "icon.ico")
 
 toggle = False
 
