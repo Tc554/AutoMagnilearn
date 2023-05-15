@@ -34,10 +34,30 @@ def updatedata():
     json_data = json.loads(data)
 
 
+def updatecheck():
+    r = urllib.request.urlopen("https://pastebin.com/raw/E76EaDMe")
+    d = r.read().decode("utf-8")
+    jd = json.loads(d)
+
+    if jd["latestVersion"] != version:
+        tkinter.messagebox.showerror("Update", "You are not on the latest version. Click OK to update.")
+        r = requests.get(jd["latestDataFile"])
+        if r.status_code == 200:
+            with open("data", 'wb') as file:
+                file.write(r.content)
+                tkinter.messagebox.showinfo("Updated", "You are now on the latest version please please reopen the app.")
+                root.destroy()
+        else:
+            tkinter.messagebox.showerror("Error", "Unexpected error. Please contact the the developer.")
+            root.destroy()
+
+
 root = tk.Tk()
 root.geometry("250x100")
 root.title("Auto Magnilearn")
 root.iconbitmap("icon.ico", "icon.ico")
+
+updatecheck()
 
 toggle = False
 
@@ -50,6 +70,8 @@ def run():
     global toggle
     toggle = not toggle
 
+    updatecheck()
+
     if toggle:
         root.state(newstate='iconic')
         time.sleep(1)
@@ -57,6 +79,7 @@ def run():
         pyautogui.moveTo(1530, 800)
 
     def send_messages():
+        updatecheck()
         times = 0
         times2 = 0
         times3 = 0
@@ -65,6 +88,7 @@ def run():
 
         while toggle:
             time.sleep(0.5)
+            updatecheck()
             pyautogui.typewrite(random.choice(texts))
             times += 1
             times2 += 1
@@ -73,7 +97,7 @@ def run():
             times5 += 1
 
             if loggedUsername == "":
-                tkinter.messagebox.showerror("You aren't logged in")
+                tkinter.messagebox.showerror("Error", "You are not logged in.")
                 root.destroy()
             if times >= 20:
                 times = 0
@@ -84,7 +108,7 @@ def run():
             if times3 >= 120:
                 times3 = 0
                 pyautogui.press("f5")
-            if times4 >= 3000:
+            if times4 >= 5:
                 times4 = 0
                 pyautogui.moveTo(1060, 815)
                 pyautogui.click()
@@ -99,7 +123,7 @@ def run():
             if times5 >= 5:
                 if not containsuser(loggedUsername):
                     updatedata()
-                    tkinter.messagebox.showerror("Your time has expired.")
+                    tkinter.messagebox.showerror("Error", "Your time has expired.")
                     root.destroy()
 
     if toggle:
@@ -113,13 +137,13 @@ def confirm_click():
     password = password_text.get("1.0", tk.END).strip()
 
     if not containsuser(username):
-        tkinter.messagebox.showerror("Username is incorrect.")
+        tkinter.messagebox.showerror("Error", "Username is incorrect.")
     else:
         if password != getdata(username, "password"):
-            tkinter.messagebox.showerror("Password is incorrect.")
+            tkinter.messagebox.showerror("Error", "Password is incorrect.")
         else:
             loggedUsername = username
-            tkinter.messagebox.showinfo("Logged in successfully.")
+            tkinter.messagebox.showinfo("Logged in", "Logged in successfully.")
             username_text.grid_forget()
             password_text.grid_forget()
             confirm_button.grid_forget()
