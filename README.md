@@ -105,7 +105,7 @@ def run():
             if times2 >= 24:
                 times2 = 0
                 pyautogui.click()
-            if times3 >= 120:
+            if times3 >= random.randint(220, 245):
                 times3 = 0
                 pyautogui.press("f5")
             if times4 >= 5:
