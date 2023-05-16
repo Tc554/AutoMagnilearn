@@ -8,14 +8,62 @@ import threading
 import urllib.request
 import json
 import requests
+from requests.auth import HTTPBasicAuth
+from bs4 import BeautifulSoup
 import base64
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
 
 version = "1.2"
 
+options = webdriver.ChromeOptions()
+options.add_experimental_option("detach", True)
+
+driver = webdriver.Chrome(options=options)
+driver.get("https://magnilearn.com")
+
+headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome \
+                         /83.0.4103.116 Safari/537.36"}
+html = requests.get(driver.current_url, headers=headers)
+
+soup = BeautifulSoup(html.content, 'html.parser')
+
+dataurl = "https://raw.githubusercontent.com/TastyCake/AutoMagnilearn/master/Data.json"
+versionurl = "https://raw.githubusercontent.com/TastyCake/AutoMagnilearn/master/Version"
+
+headers = {
+    "Authorization": "Bearer github_pat_11AX4RDGI0urP2lGOvjZc5_FWVK1DoMAvrtfHvC7LclyiNoG0eXlZC\
+4eJWfyviHoF8RDRFXAZCzYryMIVW"
+}
+
+
+def updatesoup():
+    global html
+    global soup
+
+    html = requests.get(driver.current_url, headers=headers)
+    soup = BeautifulSoup(html.content, 'html.parser')
+
+
+def fakeclick():
+    driver.switch_to.window(driver.window_handles[-1])
+    driver.find_element(By.CLASS_NAME, "hGohjX").find_element(by=By.ID, value="next_button").click()
+
+def newlesson():
+    driver.switch_to.window(driver.window_handles[-1])
+    driver.find_element(by=By.XPATH, value="(//button[contains(@class, 'sc-iBkjds')])[2]").click()
+    time.sleep(1)
+    driver.find_element(by=By.XPATH, value="//div/div[2]/div[3]/div/div/div/button[contains(@class, 'eXjqHJ')][1]").click()
+    time.sleep(10)
+    driver.find_element(by=By.XPATH, value="(//button[contains(@class, 'DTejP')])[1]").click()
+
+
 # response = urllib.request.urlopen("https://pastebin.com/raw/XXn7nYNd")
-response = urllib.request.urlopen("https://raw.githubusercontent.com/TastyCake/AutoMagnilearn/master/Data?token=GHSAT0AAAAAACBWGVNKKBA5B2S35FYDK5PGZDCQX4A")
-data = response.read().decode("utf-8")
+response = requests.get(dataurl, headers=headers)
+data = response.content.decode("utf-8")
 json_data = json.loads(data)
+print(json_data)
 
 loggedUsername = ""
 
@@ -33,15 +81,14 @@ def updatedata():
     global data
     global json_data
 
-    response = urllib.request.urlopen("https://raw.githubusercontent.com/TastyCake/AutoMagnilearn/master/Data")
-    response.add_header('Authorization', f'Bearer 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')
-    data = response.read().decode("utf-8")
+    response = requests.get(dataurl, headers=headers)
+    data = response.content.decode("utf-8")
     json_data = json.loads(data)
 
 
 def updatecheck():
-    r = urllib.request.urlopen("https://raw.githubusercontent.com/TastyCake/AutoMagnilearn/master/Version?token=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")
-    d = r.read().decode("utf-8")
+    r = requests.get(versionurl, headers=headers)
+    d = r.content.decode("utf-8")
     jd = json.loads(d)
 
     if jd["latestVersion"] != version:
@@ -89,6 +136,8 @@ def run():
         times3 = 0
         times4 = 0
         times5 = 0
+        times6 = 0
+        times7 = 0
 
         while toggle:
             time.sleep(0.5)
@@ -99,13 +148,15 @@ def run():
             times3 += 1
             times4 += 1
             times5 += 1
+            times6 += 1
+            times7 += 1
 
             if loggedUsername == "":
                 tkinter.messagebox.showerror("Error", "You are not logged in.")
                 root.destroy()
             if times >= 20:
                 times = 0
-                pyautogui.press("enter")
+                fakeclick()
             if times2 >= 24:
                 times2 = 0
                 pyautogui.click()
@@ -114,21 +165,18 @@ def run():
                 pyautogui.press("f5")
             if times4 >= 3000:
                 times4 = 0
-                pyautogui.moveTo(1060, 815)
-                pyautogui.click()
-                time.sleep(0.5)
-                pyautogui.moveTo(1150, 738)
-                pyautogui.click()
-                time.sleep(5)
-                pyautogui.moveTo(1050, 125)
-                pyautogui.click()
-                time.sleep(3)
-                pyautogui.moveTo(1530, 800)
+                newlesson()
             if times5 >= 5:
                 if not containsuser(loggedUsername):
                     updatedata()
                     tkinter.messagebox.showerror("Error", "Your time has expired.")
                     root.destroy()
+            if times6 >= 50:
+                times6 = 0
+                pyautogui.press("enter")
+            if times7 >= 35:
+                times7 = 0
+                pyautogui.click()
 
     if toggle:
         t = threading.Thread(target=send_messages)
