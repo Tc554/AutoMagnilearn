@@ -1,4 +1,4 @@
-version = "1.3"
+version = "1.4"
 
 options = webdriver.ChromeOptions()
 options.add_experimental_option("detach", True)
@@ -10,8 +10,6 @@ headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
                          /83.0.4103.116 Safari/537.36"}
 html = requests.get(driver.current_url, headers=headers)
 
-soup = BeautifulSoup(html.content, 'html.parser')
-
 dataurl = "https://raw.githubusercontent.com/TastyCake/AutoMagnilearn/master/Data.json"
 versionurl = "https://raw.githubusercontent.com/TastyCake/AutoMagnilearn/master/Version"
 
@@ -19,14 +17,6 @@ headers = {
     "Authorization": "Bearer github_pat_11AX4RDGI0urP2lGOvjZc5_FWVK1DoMAvrtfHvC7LclyiNoG0eXlZC\
 4eJWfyviHoF8RDRFXAZCzYryMIVW"
 }
-
-
-def updatesoup():
-    global html
-    global soup
-
-    html = requests.get(driver.current_url, headers=headers)
-    soup = BeautifulSoup(html.content, 'html.parser')
 
 
 def fakeclick():
