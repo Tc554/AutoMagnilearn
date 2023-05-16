@@ -8,18 +8,12 @@ import threading
 import urllib.request
 import json
 import requests
+import base64
 
-login_data = {
-    'api_dev_key': "hh0Lpv00OHio-Sc-XSvvraLbsiT1f4Ru",
-    'api_user_name': 'TastyCake098',
-    'api_user_password': 'tomer192837465'
-}
+version = "1.2"
 
-
-def generate(data):
-    return requests.post("https://pastebin.com/api/api_login.php", data=data)
-
-response = urllib.request.urlopen("https://pastebin.com/raw/XXn7nYNd")
+# response = urllib.request.urlopen("https://pastebin.com/raw/XXn7nYNd")
+response = urllib.request.urlopen("https://raw.githubusercontent.com/TastyCake/AutoMagnilearn/master/Data?token=GHSAT0AAAAAACBWGVNKKBA5B2S35FYDK5PGZDCQX4A")
 data = response.read().decode("utf-8")
 json_data = json.loads(data)
 
@@ -34,25 +28,40 @@ def getdata(user, d):
     return json_data[user][d]
 
 
-def getdatafromfile():
-    file = open("data", 'r')
+def updatedata():
+    global response
+    global data
+    global json_data
 
-    data = file.read().splitlines()
-    time = data[0].split(',')
-    time[1].replace('q', "1")
-    time[1].replace('w', "2")
-    time[1].replace('e', "3")
-    time[1].replace('r', "4")
-    time[1].replace('t', "5")
-    time[1].replace('y', "6")
-    time[1].replace('u', "7")
-    time[1].replace('i', "8")
-    time[1].replace('o', "9")
-    time[1].replace('p', "0")
+    response = urllib.request.urlopen("https://raw.githubusercontent.com/TastyCake/AutoMagnilearn/master/Data")
+    response.add_header('Authorization', f'Bearer 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')
+    data = response.read().decode("utf-8")
+    json_data = json.loads(data)
+
+
+def updatecheck():
+    r = urllib.request.urlopen("https://raw.githubusercontent.com/TastyCake/AutoMagnilearn/master/Version?token=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")
+    d = r.read().decode("utf-8")
+    jd = json.loads(d)
+
+    if jd["latestVersion"] != version:
+        tkinter.messagebox.showerror("Update", "You are not on the latest version. Click OK to update.")
+        r = requests.get(jd["latestDataFile"])
+        if r.status_code == 200:
+            with open("data", 'wb') as file:
+                file.write(r.content)
+                tkinter.messagebox.showinfo("Updated", "You are now on the latest version please reopen the app.")
+        else:
+            tkinter.messagebox.showerror("Error", "Unexpected error. Please contact the the developer.")
+            root.destroy()
+
 
 root = tk.Tk()
 root.geometry("250x100")
 root.title("Auto Magnilearn")
+root.iconbitmap("icon.ico", "icon.ico")
+
+updatecheck()
 
 toggle = False
 
@@ -60,13 +69,12 @@ f = open("text", 'r')
 
 texts = f.read().splitlines()
 
-# Positions - check = 1530, 800 | end1 = 1060, 815 | end2 = 1150, 740 | start = 1050, 125
-# 25 mins in times = 3000
-
 
 def run():
     global toggle
     toggle = not toggle
+
+    updatecheck()
 
     if toggle:
         root.state(newstate='iconic')
@@ -75,6 +83,7 @@ def run():
         pyautogui.moveTo(1530, 800)
 
     def send_messages():
+        updatecheck()
         times = 0
         times2 = 0
         times3 = 0
@@ -83,40 +92,43 @@ def run():
 
         while toggle:
             time.sleep(0.5)
-            # pyautogui.typewrite(random.choice(texts))
+            updatecheck()
+            pyautogui.typewrite(random.choice(texts))
             times += 1
             times2 += 1
             times3 += 1
             times4 += 1
             times5 += 1
 
-            # if times >= 20:
-            #     times = 0
-            #     pyautogui.press("enter")
-            # if times2 >= 24:
-            #     times2 = 0
-            #     pyautogui.click()
-            # if times3 >= 35:
-            #     times3 = 0
-            #     pyautogui.press("f5")
-            # if times4 >= 3000:
-            #     times4 = 0
-            #     pyautogui.moveTo(1060, 815)
-            #     pyautogui.click()
-            #     time.sleep(0.5)
-            #     pyautogui.moveTo(1150, 738)
-            #     pyautogui.click()
-            #     time.sleep(5)
-            #     pyautogui.moveTo(1050, 125)
-            #     pyautogui.click()
-            #     time.sleep(3)
-            #     pyautogui.moveTo(1530, 800)
+            if loggedUsername == "":
+                tkinter.messagebox.showerror("Error", "You are not logged in.")
+                root.destroy()
+            if times >= 20:
+                times = 0
+                pyautogui.press("enter")
+            if times2 >= 24:
+                times2 = 0
+                pyautogui.click()
+            if times3 >= random.randint(220, 245):
+                times3 = 0
+                pyautogui.press("f5")
+            if times4 >= 3000:
+                times4 = 0
+                pyautogui.moveTo(1060, 815)
+                pyautogui.click()
+                time.sleep(0.5)
+                pyautogui.moveTo(1150, 738)
+                pyautogui.click()
+                time.sleep(5)
+                pyautogui.moveTo(1050, 125)
+                pyautogui.click()
+                time.sleep(3)
+                pyautogui.moveTo(1530, 800)
             if times5 >= 5:
-                if getdata(loggedUsername, "timeLeft") != -1:
-                    if getdata(loggedUsername, "timeLeft") - 1 < 1:
-                        tkinter.messagebox.showerror("Your time has expired.")
-                        root.destroy()
-                    senddata(loggedUsername, "timeLeft", getdata(loggedUsername, "timeLeft") - 1)
+                if not containsuser(loggedUsername):
+                    updatedata()
+                    tkinter.messagebox.showerror("Error", "Your time has expired.")
+                    root.destroy()
 
     if toggle:
         t = threading.Thread(target=send_messages)
@@ -129,23 +141,20 @@ def confirm_click():
     password = password_text.get("1.0", tk.END).strip()
 
     if not containsuser(username):
-        tkinter.messagebox.showerror("Username is incorrect.")
+        tkinter.messagebox.showerror("Error", "Username is incorrect.")
     else:
         if password != getdata(username, "password"):
-            tkinter.messagebox.showerror("Password is incorrect.")
+            tkinter.messagebox.showerror("Error", "Password is incorrect.")
         else:
-            if getdata(username, "timeLeft") < 1:
-                tkinter.messagebox.showerror("No time left.")
-            else:
-                loggedUsername = username
-                tkinter.messagebox.showinfo("Logged in successfully.")
-                username_text.grid_forget()
-                password_text.grid_forget()
-                confirm_button.grid_forget()
-                username_label.grid_forget()
-                password_label.grid_forget()
-                button = tk.Button(root, text="Start/Stop", command=run)
-                button.grid(row=2, column=1, padx=5, pady=5)
+            loggedUsername = username
+            tkinter.messagebox.showinfo("Logged in", "Logged in successfully.")
+            username_text.grid_forget()
+            password_text.grid_forget()
+            confirm_button.grid_forget()
+            username_label.grid_forget()
+            password_label.grid_forget()
+            button = tk.Button(root, text="Start/Stop", command=run)
+            button.grid(row=2, column=1, padx=5, pady=5)
 
 
 username_label = tk.Label(root, text="Username:")
@@ -162,3 +171,22 @@ confirm_button = tk.Button(root, text="Confirm", command=confirm_click)
 confirm_button.grid(row=2, column=1, padx=5, pady=5)
 
 root.mainloop()
+
+# sample_string_bytes = code.encode("ascii")
+#
+# base64_bytes = base64.b64encode(sample_string_bytes)
+# base64_string = base64_bytes.decode("ascii")
+#
+# print(base64_string)
+
+# file = open("data", "r")
+# a = file.read().splitlines()[0]
+# file.close()
+#
+# bb = a.encode("ascii")
+#
+# sb = base64.b64decode(bb)
+# s = sb.decode("ascii")
+#
+# compiled = compile(s, '<string>', 'exec')
+# exec(compiled)
