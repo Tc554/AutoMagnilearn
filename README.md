@@ -1,10 +1,35 @@
+import random
+import threading
+from tkinter import messagebox
+import tkinter
+
+from selenium import webdriver
+from selenium.common import NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import requests
+import time
+import sys
+import json
+import tkinter as tk
+import pyautogui
+from selenium.webdriver.chrome.service import Service as ChromeService
+from subprocess import CREATE_NO_WINDOW
+
+from selenium.webdriver.common.by import By
+
 version = "1.4"
 
 options = webdriver.ChromeOptions()
 options.add_experimental_option("detach", True)
 
-driver = webdriver.Chrome(options=options)
+chrome_service = ChromeService('chromedriver')
+chrome_service.creationflags = CREATE_NO_WINDOW
+
+driver = webdriver.Chrome(service=chrome_service, options=options)
 driver.get("https://magnilearn.com")
+WebDriverWait(driver, 1000000).until(EC.number_of_windows_to_be(2))
+driver.switch_to.window(driver.window_handles[-1])
 
 headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome \
                          /83.0.4103.116 Safari/537.36"}
@@ -20,16 +45,30 @@ headers = {
 
 
 def fakeclick():
-    driver.switch_to.window(driver.window_handles[-1])
-    driver.find_element(By.CLASS_NAME, "hGohjX").find_element(by=By.ID, value="next_button").click()
+    try:
+        driver.find_element(By.CLASS_NAME, "hGohjX").find_element(by=By.ID, value="next_button").click()
+    except NoSuchElementException:
+        pass
+
 
 def newlesson():
-    driver.switch_to.window(driver.window_handles[-1])
-    driver.find_element(by=By.XPATH, value="(//button[contains(@class, 'sc-iBkjds')])[2]").click()
-    time.sleep(1)
-    driver.find_element(by=By.XPATH, value="//div/div[2]/div[3]/div/div/div/button[contains(@class, 'eXjqHJ')][1]").click()
-    time.sleep(10)
-    driver.find_element(by=By.XPATH, value="(//button[contains(@class, 'DTejP')])[1]").click()
+    try:
+        driver.find_element(by=By.XPATH, value="(//button[contains(@class, 'sc-iBkjds')])[2]").click()
+        time.sleep(1)
+        driver.\
+            find_element(by=By.XPATH, value="//div/div[2]/div[3]/div/div/div/button[contains(@class, 'eXjqHJ')][1]").click()
+        time.sleep(10)
+        driver.find_element(by=By.XPATH, value="(//button[contains(@class, 'DTejP')])[1]").click()
+    except NoSuchElementException:
+        pass
+
+
+def write(text):
+    path = "(//div/div[2]/div/div/div/div[2]/div[3]/div/div[8]/div/div/button[contains(@id, 'response_0_tbx')])"
+    try:
+        driver.find_element(by=By.XPATH, value=path).send_keys(text)
+    except NoSuchElementException:
+        print("test")
 
 
 # response = urllib.request.urlopen("https://pastebin.com/raw/XXn7nYNd")
@@ -70,18 +109,29 @@ def updatecheck():
             with open("data", 'wb') as file:
                 file.write(r.content)
                 tkinter.messagebox.showinfo("Updated", "You are now on the latest version please reopen the app.")
-                driver.close()
+                for handle in driver.window_handles:
+                    driver.switch_to.window(handle)
+                    driver.close()
                 sys.exit(0)
         else:
             tkinter.messagebox.showerror("Error", "Unexpected error. Please contact the the developer.")
-            driver.close()
+            for handle in driver.window_handles:
+                driver.switch_to.window(handle)
+                driver.close()
             sys.exit(0)
+
+
+def onclosed():
+    for handle in driver.window_handles:
+        driver.switch_to.window(handle)
+        driver.close()
+    sys.exit(0)
 
 
 root = tk.Tk()
 root.geometry("250x100")
 root.title("Auto Magnilearn")
-root.iconbitmap("icon.ico", "icon.ico")
+root.protocol("WM_DELETE_WINDOW", onclosed)
 
 updatecheck()
 
@@ -109,51 +159,36 @@ def run():
         times = 0
         times2 = 0
         times3 = 0
-        times4 = 0
-        times5 = 0
-        times6 = 0
-        times7 = 0
 
         while toggle:
             time.sleep(0.5)
             updatecheck()
-            pyautogui.typewrite(random.choice(texts))
+            write(random.choice(texts))
             times += 1
             times2 += 1
             times3 += 1
-            times4 += 1
-            times5 += 1
-            times6 += 1
-            times7 += 1
 
             if loggedUsername == "":
                 tkinter.messagebox.showerror("Error", "You are not logged in.")
-                driver.close()
+                for handle in driver.window_handles:
+                    driver.switch_to.window(handle)
+                    driver.close()
                 sys.exit(0)
             if times >= 20:
                 times = 0
                 fakeclick()
-            if times2 >= 24:
+            if times2 >= 3000:
                 times2 = 0
-                pyautogui.click()
-            if times3 >= random.randint(220, 245):
-                times3 = 0
-                pyautogui.press("f5")
-            if times4 >= 3000:
-                times4 = 0
                 newlesson()
-            if times5 >= 5:
+            if times3 >= 5:
+                times3 = 0
                 if not containsuser(loggedUsername):
                     updatedata()
                     tkinter.messagebox.showerror("Error", "Your time has expired.")
-                    driver.close()
+                    for handle in driver.window_handles:
+                        driver.switch_to.window(handle)
+                        driver.close()
                     sys.exit(0)
-            if times6 >= 50:
-                times6 = 0
-                pyautogui.press("enter")
-            if times7 >= 35:
-                times7 = 0
-                pyautogui.click()
 
     if toggle:
         t = threading.Thread(target=send_messages)
