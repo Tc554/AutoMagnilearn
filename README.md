@@ -1,24 +1,4 @@
-import random
-import threading
-from tkinter import messagebox
-import tkinter
-
-from selenium import webdriver
-from selenium.common import NoSuchElementException
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import requests
-import time
-import sys
-import json
-import tkinter as tk
-import pyautogui
-from selenium.webdriver.chrome.service import Service as ChromeService
-from subprocess import CREATE_NO_WINDOW
-
-from selenium.webdriver.common.by import By
-
-version = "1.4"
+version = "1.5"
 
 options = webdriver.ChromeOptions()
 options.add_experimental_option("detach", True)
@@ -47,7 +27,7 @@ headers = {
 def fakeclick():
     try:
         driver.find_element(By.CLASS_NAME, "hGohjX").find_element(by=By.ID, value="next_button").click()
-    except NoSuchElementException:
+    except (NoSuchElementException, ElementNotInteractableException):
         pass
 
 
@@ -59,16 +39,16 @@ def newlesson():
             find_element(by=By.XPATH, value="//div/div[2]/div[3]/div/div/div/button[contains(@class, 'eXjqHJ')][1]").click()
         time.sleep(10)
         driver.find_element(by=By.XPATH, value="(//button[contains(@class, 'DTejP')])[1]").click()
-    except NoSuchElementException:
+    except (NoSuchElementException, ElementNotInteractableException):
         pass
 
 
 def write(text):
-    path = "(//div/div[2]/div/div/div/div[2]/div[3]/div/div[8]/div/div/button[contains(@id, 'response_0_tbx')])"
+    path = "(//div/div[2]/div/div/div/div[2]/div[3]/div/div[8]/div/div/input[contains(@id, 'response_0_tbx')])"
     try:
         driver.find_element(by=By.XPATH, value=path).send_keys(text)
-    except NoSuchElementException:
-        print("test")
+    except (NoSuchElementException, ElementNotInteractableException):
+        pass
 
 
 # response = urllib.request.urlopen("https://pastebin.com/raw/XXn7nYNd")
@@ -131,6 +111,7 @@ def onclosed():
 root = tk.Tk()
 root.geometry("250x100")
 root.title("Auto Magnilearn")
+root.iconbitmap("icon.ico")
 root.protocol("WM_DELETE_WINDOW", onclosed)
 
 updatecheck()
@@ -158,7 +139,6 @@ def run():
         updatecheck()
         times = 0
         times2 = 0
-        times3 = 0
 
         while toggle:
             time.sleep(0.5)
@@ -166,29 +146,26 @@ def run():
             write(random.choice(texts))
             times += 1
             times2 += 1
-            times3 += 1
 
+            if not containsuser(loggedUsername):
+                updatedata()
+                tkinter.messagebox.showerror("Error", "Your time has expired.")
+                for handle in driver.window_handles:
+                    driver.switch_to.window(handle)
+                    driver.close()
+                sys.exit(0)
             if loggedUsername == "":
                 tkinter.messagebox.showerror("Error", "You are not logged in.")
                 for handle in driver.window_handles:
                     driver.switch_to.window(handle)
                     driver.close()
                 sys.exit(0)
-            if times >= 20:
+            if times >= random.randint(10, 20):
                 times = 0
                 fakeclick()
             if times2 >= 3000:
                 times2 = 0
                 newlesson()
-            if times3 >= 5:
-                times3 = 0
-                if not containsuser(loggedUsername):
-                    updatedata()
-                    tkinter.messagebox.showerror("Error", "Your time has expired.")
-                    for handle in driver.window_handles:
-                        driver.switch_to.window(handle)
-                        driver.close()
-                    sys.exit(0)
 
     if toggle:
         t = threading.Thread(target=send_messages)
