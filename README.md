@@ -1,4 +1,4 @@
-version = "1.5"
+version = "1.6"
 
 options = webdriver.ChromeOptions()
 options.add_experimental_option("detach", True)
@@ -25,6 +25,11 @@ headers = {
 
 
 def fakeclick():
+    try:
+        driver.find_element(By.ID, "popup_panel").find_element(by=By.ID, value="popup_ok").click()
+        time.sleep(1)
+    except (NoSuchElementException, ElementNotInteractableException):
+        pass
     try:
         driver.find_element(By.CLASS_NAME, "hGohjX").find_element(by=By.ID, value="next_button").click()
     except (NoSuchElementException, ElementNotInteractableException):
@@ -102,9 +107,12 @@ def updatecheck():
 
 
 def onclosed():
-    for handle in driver.window_handles:
-        driver.switch_to.window(handle)
-        driver.close()
+    try:
+        for handle in driver.window_handles:
+            driver.switch_to.window(handle)
+            driver.close()
+    except WebDriverException:
+        pass
     sys.exit(0)
 
 
@@ -121,6 +129,24 @@ toggle = False
 f = open("text", 'r')
 
 texts = f.read().splitlines()
+
+
+def handle_browser_closed(driver):
+    try:
+        driver.title
+    except WebDriverException:
+        print("Browser window closed.")
+        root.destroy()
+        sys.exit(0)
+
+
+def check_browser_closed():
+    while True:
+        handle_browser_closed(driver)
+
+
+check_thread = threading.Thread(target=check_browser_closed)
+check_thread.start()
 
 
 def run():
