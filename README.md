@@ -1,1 +1,1 @@
-Made to automatic some dumb school mission (Archived)
+Made to automatic some dumb school mission
